@@ -29,9 +29,16 @@ async function run() {
 
     const db = client.db("home_db");
     const serviceCollection = db.collection("services");
+    const bookingCollection = db.collection("bookings");
 
     app.get("/services", async (req, res) => {
       const cursor = serviceCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.get("/bookings", async (req, res) => {
+      const cursor = bookingCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -42,6 +49,7 @@ async function run() {
       const result = await serviceCollection.findOne(query);
       res.send(result);
     });
+
     app.get("/latest-services", async (req, res) => {
       const cursor = serviceCollection.find().sort({ createdAt: 1 }).limit(6);
       const result = await cursor.toArray();
@@ -52,6 +60,28 @@ async function run() {
       const newService = req.body;
       const result = await serviceCollection.insertOne(newService);
       res.send(result);
+    });
+
+    app.post("/bookings", async (req, res) => {
+      const booking = req.body;
+      const serviceIdString = booking.serviceId;
+      let serviceObjectId;
+      try {
+        serviceObjectId = new ObjectId(serviceIdString);
+      } catch (e) {
+        console.error("Invalid serviceId format:", serviceIdString);
+        return res
+          .status(400)
+          .send({ message: "Invalid service ID provided." });
+      }
+      const bookingToInsert = {
+        ...booking,
+        serviceId: serviceObjectId,
+        createdAt: new Date(),
+      };
+      delete bookingToInsert.serviceIdString;
+      const result = await bookingCollection.insertOne(bookingToInsert);
+      res.status(201).send(result);
     });
 
     app.patch("/services/:id", async (req, res) => {
