@@ -165,6 +165,18 @@ async function run() {
         });
       }
     });
+    app.get("/services/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { "provider.email": email };
+      try {
+        const cursor = serviceCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching services by user email:", error);
+        res.status(500).send({ message: "Failed to fetch services." });
+      }
+    });
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
