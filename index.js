@@ -218,7 +218,7 @@ async function run() {
         res.status(500).send({ message: "Failed to fetch services." });
       }
     });
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
